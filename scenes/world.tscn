@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://flhx8ttfkq22"]
 
-[ext_resource type="MeshLibrary" uid="uid://cpnk0ddikdi16" path="res://tileset.tres" id="1_0xhua"]
+[ext_resource type="MeshLibrary" uid="uid://cpnk0ddikdi16" path="res://Assets/tileset.tres" id="1_0xhua"]
 [ext_resource type="PackedScene" uid="uid://b31vnmp1nn3yq" path="res://scenes/player.tscn" id="2_4ka5q"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_nqiv1"]
@@ -37,4 +37,4 @@ data = {
 }
 
 [node name="Player" parent="." instance=ExtResource("2_4ka5q")]
-transform = Transform3D(0.638929, 0, 0.769266, 0, 1, 0, -0.769266, 0, 0.638929, 0, 0, 0.830517)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2653, 0, 0.749364)

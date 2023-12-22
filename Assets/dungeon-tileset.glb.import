@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bg53u6umb8gr1"
-path="res://.godot/imported/dungeon-tileset.glb-f7c9c2767396d045718492f83f5152ee.scn"
+path="res://.godot/imported/dungeon-tileset.glb-29ad9e85c50e391b738b01a051a0f42a.scn"
 
 [deps]
 
-source_file="res://dungeon-tileset.glb"
-dest_files=["res://.godot/imported/dungeon-tileset.glb-f7c9c2767396d045718492f83f5152ee.scn"]
+source_file="res://Assets/dungeon-tileset.glb"
+dest_files=["res://.godot/imported/dungeon-tileset.glb-29ad9e85c50e391b738b01a051a0f42a.scn"]
 
 [params]
 
