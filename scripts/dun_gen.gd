@@ -7,6 +7,7 @@ extends Node3D
 func set_start(val:bool) -> void:
 	generate()
 
+@export_range(0, 1) var survival_chance : float = 0.25
 @export var border_size : int = 20 : set = set_border_size
 func set_border_size(val : int) -> void:
 	border_size = val
@@ -53,7 +54,58 @@ func generate():
 	visualize_border()
 	for i in room_amount:
 		make_room(room_recursion)
-	print(room_positions)
+	
+	var rpv2 : PackedVector2Array = []
+	var del_graph : AStar2D = AStar2D.new()
+	var mst_graph : AStar2D = AStar2D.new()
+	
+	for p in room_positions:
+		rpv2.append(Vector2(p.x, p.z))
+		del_graph.add_point(del_graph.get_available_point_id(), Vector2(p.x, p.z))
+		mst_graph.add_point(mst_graph.get_available_point_id(), Vector2(p.x, p.z))
+	
+	var delaunay : Array = Array(Geometry2D.triangulate_delaunay(rpv2))
+	
+	for i in delaunay.size()/3:
+		var p1 : int = delaunay.pop_front()
+		var p2 : int = delaunay.pop_front()
+		var p3 : int = delaunay.pop_front()
+		del_graph.connect_points(p1, p2)
+		del_graph.connect_points(p2, p3)
+		del_graph.connect_points(p1, p3)
+	
+	var visited_points : PackedInt32Array = []
+	visited_points.append(randi() % room_positions.size())
+	while visited_points.size() != mst_graph.get_point_count():
+		var possible_connections: Array[PackedInt32Array] = []
+		for vp in visited_points:
+			for c in del_graph.get_point_connections(vp):
+				if !visited_points.has(c):
+					var con : PackedInt32Array = [vp, c]
+					possible_connections.append(con)
+		var connection : PackedInt32Array = possible_connections.pick_random()
+		
+		for pc in possible_connections:
+			if rpv2[pc[0]].distance_squared_to(rpv2[pc[1]]) <\
+			rpv2[connection[0]].distance_squared_to(rpv2[connection[1]]):
+				connection = pc
+				
+		visited_points.append(connection[1])
+		mst_graph.connect_points(connection[0], connection[1])
+		del_graph.disconnect_points(connection[0], connection[1])
+		
+		var hallway_graph : AStar2D = mst_graph
+		
+		for p in del_graph.get_point_ids():
+			for c in del_graph.get_point_connections(p):
+				if c>p:
+					var kill : float = randf()
+					if survival_chance > kill : 
+						hallway_graph.connect_points(p, c)
+	create_hallways(hallway_graph)
+
+func create_hallways(hallway_graph:AStar2D):
+	pass
 
 func make_room(rec:int):
 	if !rec>0:
