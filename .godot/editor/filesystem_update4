@@ -1,7 +1,3 @@
-res://tileset.tres
-res://world.tscn
-res://dungeon_tileset.tscn
-res://player.tscn
 res://scenes/world.tscn
+res://tileset.tres
 res://scenes/player.tscn
-res://scenes/Player.gd
