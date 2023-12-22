@@ -1,0 +1,8 @@
+SpotLight3D
+RayCast3D
+Camera3D
+Node3D
+CollisionShape3D
+CharacterBody3D
+MeshInstance3D
+GridMap
