@@ -1,6 +1,4 @@
-res://scenes/world.tscn
-res://tileset.tres
-res://scenes/player.tscn
-res://Assets/tileset.tres
 res://scenes/dun_gen.tscn
+res://Assets/tileset.tres
+res://Assets/test_tiles.tres
 res://scripts/dun_gen.gd

@@ -7,7 +7,6 @@ extends Node3D
 func set_start(val:bool) -> void:
 	generate()
 
-@export_range(0, 1) var survival_chance : float = 0.25
 @export var border_size : int = 20 : set = set_border_size
 func set_border_size(val : int) -> void:
 	border_size = val
@@ -20,6 +19,7 @@ func set_border_size(val : int) -> void:
 @export var room_amount : int = 4
 @export var room_margin : int = 1
 @export var room_recursion: int = 15
+@export_range(0, 1) var survival_chance : float = 0.25
 
 var room_tiles : Array[PackedVector3Array] = []
 var room_positions : PackedVector3Array = []
@@ -27,26 +27,10 @@ var room_positions : PackedVector3Array = []
 func visualize_border():
 	grid_map.clear()
 	for i in range(-1, border_size + 1):
-		grid_map.set_cell_item(Vector3i(i, 0, -1), 0) # top
-		grid_map.set_cell_item(Vector3i(i, 0, border_size), 0, 10) # bottom
-		grid_map.set_cell_item(Vector3i(border_size, 0, i), 0, 22) # right
-		grid_map.set_cell_item(Vector3i(-1, 0, i), 0, 16) # left
-	
-	# clear corners
-	grid_map.set_cell_item(Vector3i(-1, 0, -1), -1) 
-	grid_map.set_cell_item(Vector3i(border_size, 0, -1), -1)
-	
-	grid_map.set_cell_item(Vector3i(-1, 0, border_size), 0, -1)
-	
-	grid_map.set_cell_item(Vector3i(border_size, 0, border_size), 0, -1)
-	
-	# replace corners
-	grid_map.set_cell_item(Vector3i(-1, 0, -1), 1, 16) 
-	grid_map.set_cell_item(Vector3i(border_size, 0, -1), 1, 0)
-	
-	grid_map.set_cell_item(Vector3i(-1, 0, border_size), 1, 10)
-	
-	grid_map.set_cell_item(Vector3i(border_size, 0, border_size), 1, 22)
+		grid_map.set_cell_item(Vector3i(i, 0, -1), 2) # top
+		grid_map.set_cell_item(Vector3i(i, 0, border_size), 2, 10) # bottom
+		grid_map.set_cell_item(Vector3i(border_size, 0, i), 2, 22) # right
+		grid_map.set_cell_item(Vector3i(-1, 0, i), 2, 16) # left
 
 func generate():
 	room_tiles.clear()
@@ -102,7 +86,7 @@ func generate():
 					var kill : float = randf()
 					if survival_chance > kill : 
 						hallway_graph.connect_points(p, c)
-	create_hallways(hallway_graph)
+	# create_hallways(hallway_graph)
 
 func create_hallways(hallway_graph:AStar2D):
 	pass
@@ -121,7 +105,7 @@ func make_room(rec:int):
 	for r in range(-room_margin, height + room_margin):
 		for c in range(-room_margin, width + room_margin):
 			var pos : Vector3i = start_pos + Vector3i(c, 0, r)
-			if grid_map.get_cell_item(pos) == 2:
+			if grid_map.get_cell_item(pos) == 0:
 				make_room(rec-1)
 				return
 	
@@ -129,7 +113,7 @@ func make_room(rec:int):
 	for r in height:
 		for c in width:
 			var pos : Vector3i = start_pos + Vector3i(c, 0, r)
-			grid_map.set_cell_item(pos, 2)
+			grid_map.set_cell_item(pos, 0)
 	
 	room_tiles.append(room)
 	var avg_x : float = start_pos.x + (float(width)/2)
