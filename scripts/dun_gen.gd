@@ -39,17 +39,27 @@ func generate():
 	for i in room_amount:
 		make_room(room_recursion)
 	
+	# Create Delaunay and Minimal Spanning Tree Graph
 	var rpv2 : PackedVector2Array = []
 	var del_graph : AStar2D = AStar2D.new()
 	var mst_graph : AStar2D = AStar2D.new()
 	
 	for p in room_positions:
+		# Grab room positions and turn them into Vector2s
 		rpv2.append(Vector2(p.x, p.z))
+		# Populate the Delaunay and Minimal Spanning Tree Graphs with the room positions/points
 		del_graph.add_point(del_graph.get_available_point_id(), Vector2(p.x, p.z))
 		mst_graph.add_point(mst_graph.get_available_point_id(), Vector2(p.x, p.z))
 	
+	# Triangulates the area specified by the discrete set of points such that no point 
+	# is inside the circumcircle of any resulting triangle in rpv2. Returns a PackedInt32Array 
+	# where each triangle consists of three consecutive point indices into points 
+	# (i.e. the returned array will have n * 3 elements, with n being the number of found triangles). 
+	# This is not random. The triangles are arranged in order so that each 3 indexes of a triangle are
+	# adjacent within the array.
 	var delaunay : Array = Array(Geometry2D.triangulate_delaunay(rpv2))
 	
+	# Connect the vertices wihtin the Delaunay graph
 	for i in delaunay.size()/3:
 		var p1 : int = delaunay.pop_front()
 		var p2 : int = delaunay.pop_front()
@@ -58,34 +68,52 @@ func generate():
 		del_graph.connect_points(p2, p3)
 		del_graph.connect_points(p1, p3)
 	
+	# At this point, the Delaunay graph is finished - Moving on to the Minimal Spanning Tree
+	
+	# Keep track of visited points
 	var visited_points : PackedInt32Array = []
+	# Selects a random point from the pre-existing points to start from
 	visited_points.append(randi() % room_positions.size())
-	while visited_points.size() != mst_graph.get_point_count():
-		var possible_connections: Array[PackedInt32Array] = []
+	
+	while visited_points.size() != mst_graph.get_point_count(): # Runs until all points have been visited
+		
+		var possible_connections: Array[PackedInt32Array] = [] # Store connections/edges as an ordered pair
+		# For every visited point, check its connections in the Delaunay Graph
 		for vp in visited_points:
 			for c in del_graph.get_point_connections(vp):
-				if !visited_points.has(c):
+				if !visited_points.has(c): # If the connected end is not already in visited points, add the connection
 					var con : PackedInt32Array = [vp, c]
 					possible_connections.append(con)
+		
+		# This connection will eventually end up as the connection we designate at the end of the
+		# while loop (each time it runs, we are trying to find the shortest, new connection to an 
+		# unvisited point from all f the current visited points (random placeholder connection assigned)
 		var connection : PackedInt32Array = possible_connections.pick_random()
 		
+		# This loop compares the connection length of the current pc (possible connection)
+		# to the stored connection. If the length is shorter, the possible connection becomes
+		# the new connection. We iterate until we have exhausted all posibilities, thus giving us
+		# the shortest connection
 		for pc in possible_connections:
 			if rpv2[pc[0]].distance_squared_to(rpv2[pc[1]]) <\
 			rpv2[connection[0]].distance_squared_to(rpv2[connection[1]]):
 				connection = pc
-				
+		
+		# The end point of the new connection is now "visited" so append it to visited points
 		visited_points.append(connection[1])
+		# Create the new connection in the Minimal Spanning Tree Graph
 		mst_graph.connect_points(connection[0], connection[1])
 		del_graph.disconnect_points(connection[0], connection[1])
 		
 		var hallway_graph : AStar2D = mst_graph
-		
+		# Add additional hallways outside of the Minimal Spanning Tree
 		for p in del_graph.get_point_ids():
 			for c in del_graph.get_point_connections(p):
 				if c>p:
 					var kill : float = randf()
 					if survival_chance > kill : 
 						hallway_graph.connect_points(p, c)
+	
 	# create_hallways(hallway_graph)
 
 func create_hallways(hallway_graph:AStar2D):
@@ -102,6 +130,7 @@ func make_room(rec:int):
 	start_pos.x = randi() % (border_size - width + 1)
 	start_pos.z = randi() % (border_size - height + 1)
 	
+	# 
 	for r in range(-room_margin, height + room_margin):
 		for c in range(-room_margin, width + room_margin):
 			var pos : Vector3i = start_pos + Vector3i(c, 0, r)
@@ -116,6 +145,7 @@ func make_room(rec:int):
 			grid_map.set_cell_item(pos, 0)
 	
 	room_tiles.append(room)
+	# Calculate the center of the room and append it to the room_positions array
 	var avg_x : float = start_pos.x + (float(width)/2)
 	var avg_z : float = start_pos.z + (float(height)/2)
 	var pos : Vector3 = Vector3(avg_x, 0, avg_z)

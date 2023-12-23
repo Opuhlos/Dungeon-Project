@@ -1,4 +1,3 @@
 res://scenes/dun_gen.tscn
-res://Assets/tileset.tres
 res://Assets/test_tiles.tres
 res://scripts/dun_gen.gd
