@@ -5,7 +5,8 @@ extends Node3D
 
 @export var start : bool = false : set = set_start
 func set_start(val:bool) -> void:
-	generate()
+	if Engine.is_editor_hint():
+		generate()
 
 @export var border_size : int = 20 : set = set_border_size
 func set_border_size(val : int) -> void:
@@ -21,6 +22,11 @@ func set_border_size(val : int) -> void:
 @export var room_recursion: int = 15
 @export_range(0, 1) var survival_chance : float = 0.25
 
+@export_multiline var custom_seed : String = " " : set = set_seed
+func set_seed(val:String) -> void:
+	custom_seed = val
+	seed(val.hash())
+
 var room_tiles : Array[PackedVector3Array] = []
 var room_positions : PackedVector3Array = []
 
@@ -35,6 +41,7 @@ func visualize_border():
 func generate():
 	room_tiles.clear()
 	room_positions.clear()
+	if custom_seed : set_seed(custom_seed)
 	visualize_border()
 	for i in room_amount:
 		make_room(room_recursion)
@@ -75,6 +82,7 @@ func generate():
 	# Selects a random point from the pre-existing points to start from
 	visited_points.append(randi() % room_positions.size())
 	
+	
 	while visited_points.size() != mst_graph.get_point_count(): # Runs until all points have been visited
 		
 		var possible_connections: Array[PackedInt32Array] = [] # Store connections/edges as an ordered pair
@@ -113,11 +121,56 @@ func generate():
 					var kill : float = randf()
 					if survival_chance > kill : 
 						hallway_graph.connect_points(p, c)
-	
-	# create_hallways(hallway_graph)
+		create_hallways(hallway_graph)
 
 func create_hallways(hallway_graph:AStar2D):
-	pass
+	var hallways : Array[PackedVector3Array] = []
+	for p in hallway_graph.get_point_ids():
+		for c in hallway_graph.get_point_connections(p):
+			if c>p: # Avoids redundant processing of connections and 
+					# ensures that each connection is considered only once
+				var room_from : PackedVector3Array = room_tiles[p]
+				var room_to : PackedVector3Array = room_tiles[c]
+				var tile_from : Vector3 = room_from[0]
+				var tile_to : Vector3 = room_to[0]
+				# Finds the tile in the former room that is closest to the next room
+				for t in room_from:
+					if t.distance_squared_to(room_positions[c]) <\
+					tile_from.distance_squared_to(room_positions[c]):
+						tile_from = t
+				# Finds the tile in next room that is closest to the former room
+				for t in room_to:
+					if t.distance_squared_to(room_positions[p]) <\
+					tile_to.distance_squared_to(room_positions[p]):
+						tile_to = t
+				# Create an ordered pair of the two door connections - hallway
+				var hallway : PackedVector3Array = [tile_from, tile_to]
+				hallways.append(hallway)
+				grid_map.set_cell_item(tile_from, 3)
+				grid_map.set_cell_item(tile_to, 3)
+	
+	var astar : AStarGrid2D = AStarGrid2D.new()
+	astar.size = Vector2i.ONE * border_size
+	astar.update()
+	astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
+	astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
+	
+	# Define Obstacle Tiles
+	for t in grid_map.get_used_cells_by_item(0):
+		astar.set_point_solid(Vector2i(t.x, t.z))
+	
+	for h in hallways: 
+		var pos_from : Vector2i = Vector2i(h[0].x, h[0].z)
+		var pos_to : Vector2i = Vector2i(h[1].x, h[1].z)
+		var hall : PackedVector2Array = astar.get_point_path(pos_from, pos_to) # Array of points
+		# of the path from pos_from to pos_to
+		
+		# Convert the Vector2s into Vector3s
+		for t in hall:
+			var pos : Vector3i = Vector3i(t.x, 0, t.y)
+			if grid_map.get_cell_item(pos) < 0:
+				# Place the hallway tiles down
+				grid_map.set_cell_item(pos, 1)
 
 func make_room(rec:int):
 	if !rec>0:
@@ -143,6 +196,7 @@ func make_room(rec:int):
 		for c in width:
 			var pos : Vector3i = start_pos + Vector3i(c, 0, r)
 			grid_map.set_cell_item(pos, 0)
+			room.append(pos)
 	
 	room_tiles.append(room)
 	# Calculate the center of the room and append it to the room_positions array
