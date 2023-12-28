@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://b31vnmp1nn3yq"]
 
-[ext_resource type="Script" path="res://scenes/Player.gd" id="1_wr8nv"]
+[ext_resource type="Script" path="res://scripts/Player.gd" id="1_dc8jb"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_wcl1n"]
 
@@ -8,10 +8,10 @@
 radius = 0.375
 height = 1.2
 
-[node name="Player" type="Node3D"]
+[node name="Player" type="Node3D" groups=["player"]]
 
 [node name="Player" type="CharacterBody3D" parent="."]
-script = ExtResource("1_wr8nv")
+script = ExtResource("1_dc8jb")
 
 [node name="standing_collision_shape" type="CollisionShape3D" parent="Player"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.06779, 0)
@@ -33,3 +33,9 @@ light_color = Color(1, 0.94902, 0.8, 1)
 
 [node name="RayCast3D" type="RayCast3D" parent="Player"]
 target_position = Vector3(0, 2, 0)
+
+[node name="hitbox" type="Area3D" parent="Player" groups=["player"]]
+
+[node name="standing_collision_shape2" type="CollisionShape3D" parent="Player/hitbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.06779, 0)
+shape = SubResource("CapsuleShape3D_wcl1n")

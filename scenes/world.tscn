@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://flhx8ttfkq22"]
+[gd_scene load_steps=7 format=3 uid="uid://flhx8ttfkq22"]
 
 [ext_resource type="MeshLibrary" uid="uid://cpnk0ddikdi16" path="res://Assets/tileset.tres" id="1_0xhua"]
 [ext_resource type="PackedScene" uid="uid://b31vnmp1nn3yq" path="res://scenes/player.tscn" id="2_4ka5q"]
+[ext_resource type="PackedScene" uid="uid://dfmr6oxhsjnsj" path="res://scenes/enemy.tscn" id="3_8yxic"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_nqiv1"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -38,3 +39,6 @@ data = {
 
 [node name="Player" parent="." instance=ExtResource("2_4ka5q")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2653, 0, 0.749364)
+
+[node name="Enemy" parent="." instance=ExtResource("3_8yxic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.557703, 0, 1.69721)

@@ -1,4 +1,6 @@
 res://scenes/world.tscn
-res://tileset.tres
-res://scenes/player.tscn
 res://Assets/tileset.tres
+res://singletons/event_handler.gd
+res://scenes/player.tscn
+res://scenes/enemy.tscn
+res://enemy.gd
